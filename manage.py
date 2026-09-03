@@ -17,6 +17,20 @@ def main():
         ) from exc
     execute_from_command_line(sys.argv)
 
+{
+  "builds": [
+    {
+      "src": "project/wsgi.py",
+      "use": "@vercel/python"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "project/wsgi.py"
+    }
+  ]
+}
 
 if __name__ == '__main__':
     main()
