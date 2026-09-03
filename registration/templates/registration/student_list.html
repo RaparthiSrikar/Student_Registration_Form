@@ -1,0 +1,102 @@
+{% extends 'registration/base.html' %}
+{% block title %}Registered Students{% endblock %}
+{% block content %}
+<div class="enroll-main" style="max-width: 1100px; margin: 2rem auto;">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="enroll-heading mb-1">Student Records Dashboard</h1>
+            <p class="enroll-sub mb-0">{{ total_students }} registered student{{ total_students|pluralize }} stored in database.</p>
+        </div>
+        <a href="{% url 'registration:register' %}" class="enroll-submit text-decoration-none">+ Register new student</a>
+    </div>
+
+    <!-- Dashboard Summary KPI Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3 col-6">
+            <div class="card border-0 shadow-sm rounded-4 p-3 bg-white border-start border-4 border-primary">
+                <small class="text-muted text-uppercase fw-bold d-block mb-1" style="font-size: 0.75rem;">Total Registered</small>
+                <div class="fs-3 fw-bold text-primary mb-0">{{ total_students }}</div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="card border-0 shadow-sm rounded-4 p-3 bg-white border-start border-4 border-info">
+                <small class="text-muted text-uppercase fw-bold d-block mb-1" style="font-size: 0.75rem;">Male Students</small>
+                <div class="fs-3 fw-bold text-info mb-0">{{ male_count }}</div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="card border-0 shadow-sm rounded-4 p-3 bg-white border-start border-4 border-danger">
+                <small class="text-muted text-uppercase fw-bold d-block mb-1" style="font-size: 0.75rem;">Female Students</small>
+                <div class="fs-3 fw-bold text-danger mb-0">{{ female_count }}</div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="card border-0 shadow-sm rounded-4 p-3 bg-white border-start border-4 border-secondary">
+                <small class="text-muted text-uppercase fw-bold d-block mb-1" style="font-size: 0.75rem;">Other Students</small>
+                <div class="fs-3 fw-bold text-secondary mb-0">{{ other_count }}</div>
+            </div>
+        </div>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="table-responsive bg-white rounded-3 shadow-sm p-3">
+        <table class="table align-middle table-hover mb-0">
+            <thead>
+                <tr style="color: var(--navy); font-family: 'Lora', serif; font-size: 0.9rem;">
+                    <th>Photo</th>
+                    <th>Name</th>
+                    <th>Age</th>
+                    <th>Phone</th>
+                    <th>Email</th>
+                    <th>Gender</th>
+                    <th>Courses</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in students %}
+                <tr>
+                    <td>
+                        {% if s.profile_image %}
+                            <img src="{{ s.profile_image.url }}" style="width:42px;height:42px;border-radius:50%;object-fit:cover;" alt="{{ s.name }}">
+                        {% else %}
+                            <div class="bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center" style="width:42px;height:42px;">{{ s.name|slice:":1" }}</div>
+                        {% endif %}
+                    </td>
+                    <td class="fw-semibold">{{ s.name }}</td>
+                    <td>{{ s.age }}</td>
+                    <td>{{ s.phone_number }}</td>
+                    <td>{{ s.email }}</td>
+                    <td><span class="badge bg-light text-dark border">{{ s.get_gender_display }}</span></td>
+                    <td>
+                        {% for c in s.courses.all %}
+                            <span class="badge bg-primary-subtle text-primary border border-primary-subtle me-1 mb-1">{{ c.name }}</span>
+                        {% empty %}
+                            <span class="text-muted">—</span>
+                        {% endfor %}
+                    </td>
+                    <td class="text-end">
+                        <div class="btn-group btn-group-sm">
+                            <a href="{% url 'registration:student_detail' s.pk %}" class="btn btn-outline-primary" title="View details">View</a>
+                            <a href="{% url 'registration:student_edit' s.pk %}" class="btn btn-outline-secondary" title="Edit student">Edit</a>
+                            <a href="{% url 'registration:student_delete' s.pk %}" class="btn btn-outline-danger" title="Delete student">Delete</a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="8" class="text-center text-muted py-4">No students registered yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+

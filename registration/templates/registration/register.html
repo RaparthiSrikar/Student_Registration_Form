@@ -1,0 +1,267 @@
+{% extends 'registration/base.html' %}
+{% block title %}Student Enrollment Form{% endblock %}
+
+{% block content %}
+<div class="enroll-shell">
+
+    <aside class="enroll-sidebar">
+        <div>
+            <div class="enroll-mark">
+                Riverstone Institute
+                <span>STUDENT ENROLLMENT</span>
+            </div>
+            <ul class="enroll-steps">
+                <li><span class="step-num">01</span> Personal information</li>
+                <li><span class="step-num">02</span> Contact details</li>
+                <li><span class="step-num">03</span> Course selection</li>
+                <li><span class="step-num">04</span> Profile photo</li>
+            </ul>
+        </div>
+        <p class="enroll-footnote">
+            All information is validated for accuracy before your record is created.
+            Fields marked required must be completed to submit.
+        </p>
+    </aside>
+
+    <main class="enroll-main">
+        <h1 class="enroll-heading">{{ title|default:"Register as a new student" }}</h1>
+        <p class="enroll-sub">Complete the form below to create your enrollment record. It takes about three minutes.</p>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert-enroll-{{ message.tags }} mb-4">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="post" enctype="multipart/form-data" novalidate id="enrollForm">
+            {% csrf_token %}
+
+            <!-- Personal Information -->
+            <div class="form-section">
+                <div class="form-section-title">Personal information</div>
+                <div class="row g-3">
+                    <div class="col-md-7">
+                        <label class="form-label" for="{{ form.name.id_for_label }}">Full name</label>
+                        {{ form.name }}
+                        {% if form.name.errors %}<div class="invalid-feedback d-block">{{ form.name.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-md-5">
+                        <label class="form-label" for="{{ form.age.id_for_label }}">Age</label>
+                        {{ form.age }}
+                        {% if form.age.errors %}<div class="invalid-feedback d-block">{{ form.age.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Gender</label>
+                        <div class="choice-grid" id="genderGrid">
+                            {% for radio in form.gender %}
+                                <label class="choice-item {% if radio.data.selected %}selected{% endif %}">
+                                    {{ radio.tag }} {{ radio.choice_label }}
+                                </label>
+                            {% endfor %}
+                        </div>
+                        {% if form.gender.errors %}<div class="invalid-feedback d-block">{{ form.gender.errors.0 }}</div>{% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contact Information -->
+            <div class="form-section">
+                <div class="form-section-title">Contact details</div>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label" for="{{ form.phone_number.id_for_label }}">Phone number</label>
+                        {{ form.phone_number }}
+                        {% if form.phone_number.errors %}<div class="invalid-feedback d-block">{{ form.phone_number.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" for="{{ form.email.id_for_label }}">Email address</label>
+                        {{ form.email }}
+                        {% if form.email.errors %}<div class="invalid-feedback d-block">{{ form.email.errors.0 }}</div>{% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Course Selection -->
+            <div class="form-section">
+                <div class="form-section-title">Course selection (Select one or more)</div>
+                <div class="choice-grid" id="courseGrid">
+                    {% for checkbox in form.courses %}
+                        <label class="choice-item {% if checkbox.data.selected %}selected{% endif %}">
+                            {{ checkbox.tag }} {{ checkbox.choice_label }}
+                        </label>
+                    {% endfor %}
+                </div>
+                {% if form.courses.errors %}<div class="invalid-feedback d-block">{{ form.courses.errors.0 }}</div>{% endif %}
+            </div>
+
+            <!-- Profile Image -->
+            <div class="form-section">
+                <div class="form-section-title">Profile photo</div>
+                <div class="upload-zone">
+                    {% if student and student.profile_image %}
+                        <img id="imagePreview" src="{{ student.profile_image.url }}" alt="Preview" style="display:block;">
+                    {% else %}
+                        <img id="imagePreview" alt="Preview">
+                    {% endif %}
+                    {{ form.profile_image }}
+                    <p>JPG or PNG, up to 2MB</p>
+                </div>
+                {% if form.profile_image.errors %}<div class="invalid-feedback d-block">{{ form.profile_image.errors.0 }}</div>{% endif %}
+            </div>
+
+            <div class="d-flex align-items-center gap-2 pt-2">
+                <button type="submit" class="enroll-submit">{{ btn_text|default:"Submit registration" }}</button>
+                <button type="reset" class="enroll-reset">Clear form</button>
+            </div>
+        </form>
+    </main>
+</div>
+
+<script>
+// Highlight selected choice cards
+document.querySelectorAll('.choice-grid').forEach(function(grid) {
+    grid.addEventListener('change', function() {
+        grid.querySelectorAll('.choice-item').forEach(function(item) {
+            const inp = item.querySelector('input');
+            if (inp) {
+                item.classList.toggle('selected', inp.checked);
+            }
+        });
+    });
+});
+
+// Image preview
+const imageInput = document.querySelector('#id_profile_image');
+const preview = document.querySelector('#imagePreview');
+if (imageInput) {
+    imageInput.addEventListener('change', function() {
+        const file = this.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = e => { preview.src = e.target.result; preview.style.display = 'block'; };
+            reader.readAsDataURL(file);
+        }
+    });
+}
+
+// Restrict Age input box to digits only (prevent special characters and alphabets)
+const ageInput = document.querySelector('#id_age');
+if (ageInput) {
+    ageInput.addEventListener('keydown', function(e) {
+        const allowedNav = ['Backspace', 'Tab', 'ArrowLeft', 'ArrowRight', 'Delete', 'Enter'];
+        if (!allowedNav.includes(e.key) && !/^\d$/.test(e.key)) {
+            e.preventDefault();
+        }
+    });
+    ageInput.addEventListener('input', function() {
+        this.value = this.value.replace(/[^0-9]/g, '');
+    });
+}
+
+// Restrict Phone input box to digits only (prevent special characters and alphabets, max 10 digits)
+const phoneInput = document.querySelector('#id_phone_number');
+if (phoneInput) {
+    phoneInput.addEventListener('keydown', function(e) {
+        const allowedNav = ['Backspace', 'Tab', 'ArrowLeft', 'ArrowRight', 'Delete', 'Enter'];
+        if (!allowedNav.includes(e.key) && !/^\d$/.test(e.key)) {
+            e.preventDefault();
+        }
+    });
+    phoneInput.addEventListener('input', function() {
+        this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);
+    });
+}
+
+// Restrict Email input box (prevent spaces, auto-lowercase)
+const emailInput = document.querySelector('#id_email');
+if (emailInput) {
+    emailInput.addEventListener('keydown', function(e) {
+        if (e.key === ' ') e.preventDefault();
+    });
+    emailInput.addEventListener('input', function() {
+        this.value = this.value.replace(/\s/g, '').toLowerCase();
+    });
+}
+
+// Module 5: Client-side validation
+const form = document.getElementById('enrollForm');
+form.addEventListener('submit', function(e) {
+    let valid = true;
+    const showError = (field, msg) => {
+        field.classList.add('is-invalid');
+        let fb = field.parentElement.querySelector('.invalid-feedback');
+        if (!fb) {
+            fb = document.createElement('div');
+            fb.className = 'invalid-feedback d-block';
+            field.parentElement.appendChild(fb);
+        }
+        fb.textContent = msg;
+        valid = false;
+    };
+    const clearError = (field) => {
+        field.classList.remove('is-invalid');
+        const fb = field.parentElement.querySelector('.invalid-feedback');
+        if (fb) fb.remove();
+    };
+
+    const name = document.querySelector('#id_name');
+    clearError(name);
+    if (!name.value.trim()) showError(name, 'Name is required.');
+    else if (!/^[A-Za-z\s]{2,}$/.test(name.value.trim())) showError(name, 'Enter a valid name.');
+
+    const age = document.querySelector('#id_age');
+    clearError(age);
+    if (!age.value) showError(age, 'Age is required.');
+    else if (!/^\d+$/.test(age.value)) showError(age, 'Age must contain only digits (no special characters or letters).');
+    else if (parseInt(age.value, 10) <= 0) showError(age, 'Age must be positive.');
+
+    const phone = document.querySelector('#id_phone_number');
+    clearError(phone);
+    if (!phone.value.trim()) showError(phone, 'Phone number is required.');
+    else if (!/^\d{10}$/.test(phone.value.trim())) showError(phone, 'Phone number must contain exactly 10 numeric digits.');
+
+    const email = document.querySelector('#id_email');
+    clearError(email);
+    if (!email.value.trim()) showError(email, 'Email address is required.');
+    else if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email.value.trim())) showError(email, 'Enter a valid email address (e.g., student@domain.com).');
+
+    const genderChecked = document.querySelector('#genderGrid input[type=radio]:checked');
+    if (!genderChecked) {
+        let genderErr = document.querySelector('#genderGrid').parentElement.querySelector('.invalid-feedback');
+        if (!genderErr) {
+            genderErr = document.createElement('div');
+            genderErr.className = 'invalid-feedback d-block';
+            document.querySelector('#genderGrid').parentElement.appendChild(genderErr);
+        }
+        genderErr.textContent = 'Please select a gender.';
+        valid = false;
+    }
+
+    const courseChecked = document.querySelectorAll('#courseGrid input[type=checkbox]:checked');
+    if (courseChecked.length === 0) {
+        let courseErr = document.querySelector('#courseGrid').parentElement.querySelector('.invalid-feedback');
+        if (!courseErr) {
+            courseErr = document.createElement('div');
+            courseErr.className = 'invalid-feedback d-block';
+            document.querySelector('#courseGrid').parentElement.appendChild(courseErr);
+        }
+        courseErr.textContent = 'Please select at least one course.';
+        valid = false;
+    }
+
+    const image = document.querySelector('#id_profile_image');
+    clearError(image);
+    const isEditMode = document.querySelector('h1').textContent.includes('Edit');
+    if (!image.files.length && !isEditMode) {
+        showError(image, 'Please select a profile image.');
+    } else if (image.files.length) {
+        const ext = image.files[0].name.split('.').pop().toLowerCase();
+        if (!['jpg', 'jpeg', 'png'].includes(ext)) showError(image, 'Only JPG or PNG files are allowed.');
+        else if (image.files[0].size > 2 * 1024 * 1024) showError(image, 'Image must be under 2MB.');
+    }
+
+    if (!valid) e.preventDefault();
+});
+</script>
+
+{% endblock %}

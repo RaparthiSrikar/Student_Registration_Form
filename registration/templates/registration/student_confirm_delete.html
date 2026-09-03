@@ -1,0 +1,27 @@
+{% extends 'registration/base.html' %}
+{% block title %}Delete Confirmation - {{ student.name }}{% endblock %}
+
+{% block content %}
+<div class="container py-5" style="max-width: 550px;">
+    <div class="card border-danger shadow-sm rounded-4 overflow-hidden">
+        <div class="card-header bg-danger text-white p-3">
+            <h3 class="h5 mb-0">Confirm Delete</h3>
+        </div>
+        <div class="card-body p-4 text-center">
+            {% if student.profile_image %}
+                <img src="{{ student.profile_image.url }}" alt="{{ student.name }}" class="rounded-circle mb-3" style="width: 80px; height: 80px; object-fit: cover;">
+            {% endif %}
+            <p class="fs-5 text-dark mb-2">Are you sure you want to delete <strong>{{ student.name }}</strong>?</p>
+            <p class="text-muted small mb-4">This operation cannot be undone. Email: {{ student.email }}</p>
+
+            <form method="post">
+                {% csrf_token %}
+                <div class="d-flex justify-content-center gap-3">
+                    <button type="submit" class="btn btn-danger px-4">Yes, Delete Record</button>
+                    <a href="{% url 'registration:student_list' %}" class="btn btn-outline-secondary px-4">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

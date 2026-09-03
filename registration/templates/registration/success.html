@@ -1,0 +1,138 @@
+{% extends 'registration/base.html' %}
+{% block title %}Registration Dashboard - Student Portal{% endblock %}
+
+{% block content %}
+<div class="container py-5" style="max-width: 950px;">
+
+    <!-- Registration Success Header Banner -->
+    <div class="card border-0 shadow-sm rounded-4 mb-4 overflow-hidden" style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); color: #fff;">
+        <div class="card-body p-4 p-md-5">
+            <div class="d-flex align-items-center gap-3 mb-3">
+                <div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center shadow" style="width: 54px; height: 54px; font-size: 1.8rem;">
+                    &#10003;
+                </div>
+                <div>
+                    <h1 class="h3 font-serif mb-1 text-white">Registration Successful!</h1>
+                    <p class="mb-0 text-white-50">Student record created and saved in the SQL database.</p>
+                </div>
+            </div>
+
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-success bg-success text-white border-0 py-2 px-3 mb-0 rounded-3 mt-3">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Dashboard Statistics KPI Grid -->
+    <div class="row g-3 mb-4">
+        <!-- Total Registered Students KPI -->
+        <div class="col-md-3 col-6">
+            <div class="card border-0 shadow-sm rounded-4 text-center p-3 bg-white h-100 border-start border-4 border-primary">
+                <small class="text-muted text-uppercase fw-bold d-block mb-1" style="font-size: 0.75rem; letter-spacing: 0.05em;">Total Students</small>
+                <div class="display-5 fw-bold text-primary mb-0">{{ total_students }}</div>
+                <small class="text-success fw-semibold" style="font-size: 0.8rem;">Registered in DB</small>
+            </div>
+        </div>
+
+        <!-- Male Count KPI -->
+        <div class="col-md-3 col-6">
+            <div class="card border-0 shadow-sm rounded-4 text-center p-3 bg-white h-100 border-start border-4 border-info">
+                <small class="text-muted text-uppercase fw-bold d-block mb-1" style="font-size: 0.75rem; letter-spacing: 0.05em;">Male</small>
+                <div class="display-5 fw-bold text-info mb-0">{{ male_count }}</div>
+                <small class="text-muted" style="font-size: 0.8rem;">Students</small>
+            </div>
+        </div>
+
+        <!-- Female Count KPI -->
+        <div class="col-md-3 col-6">
+            <div class="card border-0 shadow-sm rounded-4 text-center p-3 bg-white h-100 border-start border-4 border-danger">
+                <small class="text-muted text-uppercase fw-bold d-block mb-1" style="font-size: 0.75rem; letter-spacing: 0.05em;">Female</small>
+                <div class="display-5 fw-bold text-danger mb-0">{{ female_count }}</div>
+                <small class="text-muted" style="font-size: 0.8rem;">Students</small>
+            </div>
+        </div>
+
+        <!-- Other Count KPI -->
+        <div class="col-md-3 col-6">
+            <div class="card border-0 shadow-sm rounded-4 text-center p-3 bg-white h-100 border-start border-4 border-secondary">
+                <small class="text-muted text-uppercase fw-bold d-block mb-1" style="font-size: 0.75rem; letter-spacing: 0.05em;">Other</small>
+                <div class="display-5 fw-bold text-secondary mb-0">{{ other_count }}</div>
+                <small class="text-muted" style="font-size: 0.8rem;">Students</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Newly Registered Student Summary Card -->
+    {% if latest_student %}
+    <div class="card border-0 shadow-sm rounded-4 mb-4 bg-white overflow-hidden">
+        <div class="card-header bg-light border-0 py-3 px-4 d-flex justify-content-between align-items-center">
+            <h2 class="h6 mb-0 text-dark font-serif fw-bold">Latest Registered Student</h2>
+            <span class="badge bg-success-subtle text-success border border-success-subtle">Just Added</span>
+        </div>
+        <div class="card-body p-4">
+            <div class="row align-items-center g-3">
+                <div class="col-auto">
+                    {% if latest_student.profile_image %}
+                        <img src="{{ latest_student.profile_image.url }}" alt="{{ latest_student.name }}" class="rounded-circle shadow-sm" style="width: 72px; height: 72px; object-fit: cover;">
+                    {% else %}
+                        <div class="bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center fs-3" style="width: 72px; height: 72px;">{{ latest_student.name|slice:":1" }}</div>
+                    {% endif %}
+                </div>
+                <div class="col">
+                    <h3 class="h5 mb-1 fw-bold text-dark">{{ latest_student.name }}</h3>
+                    <div class="text-muted small mb-2">
+                        <span>Age: {{ latest_student.age }}</span> &bull;
+                        <span>Gender: {{ latest_student.get_gender_display }}</span> &bull;
+                        <span>Phone: {{ latest_student.phone_number }}</span> &bull;
+                        <span>Email: {{ latest_student.email }}</span>
+                    </div>
+                    <div>
+                        <strong class="small text-muted me-2">Enrolled Courses:</strong>
+                        {% for c in latest_student.courses.all %}
+                            <span class="badge bg-primary-subtle text-primary border border-primary-subtle me-1">{{ c.name }}</span>
+                        {% empty %}
+                            <span class="text-muted small">None</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="col-md-auto text-end">
+                    <a href="{% url 'registration:student_detail' latest_student.pk %}" class="btn btn-outline-primary btn-sm">View Profile</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Course Distribution Breakdown & Quick Actions -->
+    <div class="row g-4">
+        {% if course_stats %}
+        <div class="col-md-7">
+            <div class="card border-0 shadow-sm rounded-4 bg-white p-4 h-100">
+                <h3 class="h6 font-serif fw-bold text-dark mb-3">Course Enrollment Breakdown</h3>
+                <div class="list-group list-group-flush">
+                    {% for c in course_stats %}
+                    <div class="list-group-item bg-transparent border-0 px-0 d-flex justify-content-between align-items-center py-2">
+                        <span class="fw-medium text-dark">{{ c.name }}</span>
+                        <span class="badge bg-primary rounded-pill">{{ c.student_count }} student{{ c.student_count|pluralize }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="{% if course_stats %}col-md-5{% else %}col-12{% endif %}">
+            <div class="card border-0 shadow-sm rounded-4 p-4 bg-white h-100 d-flex flex-column justify-content-center">
+                <h3 class="h6 font-serif fw-bold text-dark mb-3">Quick Navigation</h3>
+                <div class="d-grid gap-2">
+                    <a href="{% url 'registration:register' %}" class="enroll-submit text-decoration-none text-center py-2.5">+ Register Another Student</a>
+                    <a href="{% url 'registration:student_list' %}" class="btn btn-outline-dark py-2.5 rounded-3 fw-semibold">View All Registered Students Directory ({{ total_students }})</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
