@@ -143,7 +143,11 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 
 
 MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+if os.environ.get('VERCEL'):
+    MEDIA_ROOT = Path('/tmp') / 'media'
+else:
+    MEDIA_ROOT = BASE_DIR / 'media'
+
 
 # Email
 MAILERS = {
