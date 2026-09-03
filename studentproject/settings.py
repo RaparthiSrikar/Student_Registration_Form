@@ -12,16 +12,21 @@ load_dotenv()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get(
-    'SECRET_KEY',
-    'django-insecure-&08rxre=r^2i+q*5jj#97hync@8l@5cnd4o$27s4!#r*^zvle2'
+# Fallback ensures empty string "" from environment variable won't crash Django
+SECRET_KEY = (
+    os.environ.get('SECRET_KEY') 
+    or 'django-insecure-&08rxre=r^2i+q*5jj#97hync@8l@5cnd4o$27s4!#r*^zvle2'
 )
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', 'False').lower() in ('true', '1', 't', 'yes')
 
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(',')
+# Accept all hosts on Vercel / production to prevent 400 Bad Request (DisallowedHost)
+ALLOWED_HOSTS = ['*']
+
+# Vercel Proxy Header configuration
+USE_X_FORWARDED_HOST = True
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 CSRF_TRUSTED_ORIGINS = [
     'https://*.vercel.app',
@@ -131,7 +136,11 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+# WhiteNoise Configuration
+WHITENOISE_USE_FINDERS = True
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
+
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
